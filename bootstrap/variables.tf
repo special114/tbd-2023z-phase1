@@ -4,7 +4,7 @@ variable "tbd_semester" {
 }
 
 variable "user_id" {
-  type        = number
+  type        = string
   description = "TBD project group id"
 }
 variable "billing_account" {
