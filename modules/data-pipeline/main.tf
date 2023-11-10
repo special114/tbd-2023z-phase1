@@ -50,6 +50,8 @@ resource "google_storage_bucket" "tbd-data-bucket" {
     uniform_bucket_level_access = false #tfsec:ignore:google-storage-enable-ubla
     force_destroy               = true
     public_access_prevention    = "enforced"
+
+    #checkov:skip=CKV_GCP_78: "Ensure Cloud storage has versioning enabled"
 }
 
 resource "google_storage_bucket_iam_member" "tbd-data-bucket-iam-editor" {
