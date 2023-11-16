@@ -152,12 +152,22 @@ IMPORTANT ❗ ❗ ❗ Please remember to destroy all the resources after each wo
    Przy pomocy komendy uruchomionej w katalogu `tbd-2023z-phase1/modules/data-pipeline`
    `terraform graph | dot -Tsvg > graph.svg`
    wygenerowaliśmy graf zależności.
+
+   ![img.svg](doc/figures/task_7_graph.svg)
    
 9. Reach YARN UI
+
+   Połączenie z YARN UI uzyskano poprzez wykonanie komendy połączenia z serwerem `tbd-cluster-m`:
    
-   ***place the port and the screenshot of YARN UI here***
+   `gcloud compute ssh --zone "europe-west1-b" "tbd-cluster-m" --project "tbd-2023z-300271-2" -- -L 8088:localhost:8088`
    
-10. Draw an architecture diagram (e.g. in draw.io) that includes:
+   i połączeniu się z portem ***8088***.
+   
+   ![yarn_ui_1](https://github.com/special114/tbd-2023z-phase1/assets/51239039/d2a73b1d-8acc-4d04-be4d-601d61032a46)
+   ![yarn_ui_2](https://github.com/special114/tbd-2023z-phase1/assets/51239039/5213a165-1e1a-4a5e-b758-6139a553d0e8)
+
+
+11. Draw an architecture diagram (e.g. in draw.io) that includes:
     1. VPC topology with service assignment to subnets
     2. Description of the components of service accounts
     3. List of buckets for disposal
@@ -165,7 +175,7 @@ IMPORTANT ❗ ❗ ❗ Please remember to destroy all the resources after each wo
   
     ***place your diagram here***
 
-11. Add costs by entering the expected consumption into Infracost
+12. Add costs by entering the expected consumption into Infracost
 
    ***place the expected consumption you entered here***
 
