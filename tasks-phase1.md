@@ -5,9 +5,9 @@ IMPORTANT ❗ ❗ ❗ Please remember to destroy all the resources after each wo
 
 1. Authors:
 
-   ***enter your group nr***
+   ***Grupr no. 6***
 
-   ***link to forked repo***
+   ***repo: https://github.com/special114/tbd-2023z-phase1***
    
 2. Fork https://github.com/bdg-tbd/tbd-2023z-phase1 and follow all steps in README.md.
 
@@ -32,23 +32,41 @@ IMPORTANT ❗ ❗ ❗ Please remember to destroy all the resources after each wo
         * role   // follow the instruction above
         * member = "serviceAccount:${var.data_service_account}"
 
-    ***insert the link to the modified file and terraform snippet here***
+    ***Link to modified file: https://github.com/special114/tbd-2023z-phase1/blob/master/modules/data-pipeline/main.tf***
+    ***Code snippet:***
+   ```
+   resource "google_storage_bucket" "tbd-data-bucket" {
+     project                     = var.project_name
+     name                        = var.data_bucket_name
+     location                    = var.region
+     uniform_bucket_level_access = false #tfsec:ignore:google-storage-enable-ubla
+     force_destroy               = true
+     public_access_prevention    = "enforced"
+
+     #checkov:skip=CKV_GCP_78: "Ensure Cloud storage has versioning enabled"
+   }
+   
+   resource "google_storage_bucket_iam_member" "tbd-data-bucket-iam-editor" {
+     bucket = google_storage_bucket.tbd-data-bucket.name
+     role   = "roles/storage.objectUser"
+     member = "serviceAccount:${var.data_service_account}"
+   }
+   ```
 
     Create PR from this branch to **YOUR** master and merge it to make new release. 
     
     ***place the screenshot from GA after succesfull application of release with this changes***
-
     
 
-6. Analyze terraform code. Play with terraform plan, terraform graph to investigate different modules.
+7. Analyze terraform code. Play with terraform plan, terraform graph to investigate different modules.
 
     ***describe one selected module and put the output of terraform graph for this module here***
    
-7. Reach YARN UI
+8. Reach YARN UI
    
    ***place the port and the screenshot of YARN UI here***
    
-8. Draw an architecture diagram (e.g. in draw.io) that includes:
+9. Draw an architecture diagram (e.g. in draw.io) that includes:
     1. VPC topology with service assignment to subnets
     2. Description of the components of service accounts
     3. List of buckets for disposal
@@ -56,13 +74,13 @@ IMPORTANT ❗ ❗ ❗ Please remember to destroy all the resources after each wo
   
     ***place your diagram here***
 
-9. Add costs by entering the expected consumption into Infracost
+10. Add costs by entering the expected consumption into Infracost
 
    ***place the expected consumption you entered here***
 
    ***place the screenshot from infracost output here***
 
-10. Some resources are not supported by infracost yet. Estimate manually total costs of infrastructure based on pricing costs for region used in the project. Include costs of cloud composer, dataproc and AI vertex workbanch and them to infracost estimation.
+11. Some resources are not supported by infracost yet. Estimate manually total costs of infrastructure based on pricing costs for region used in the project. Include costs of cloud composer, dataproc and AI vertex workbanch and them to infracost estimation.
 
     ***place your estimation and references here***
 
