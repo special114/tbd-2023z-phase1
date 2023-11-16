@@ -33,6 +33,7 @@ IMPORTANT ❗ ❗ ❗ Please remember to destroy all the resources after each wo
         * member = "serviceAccount:${var.data_service_account}"
 
     ***Link to modified file: https://github.com/special114/tbd-2023z-phase1/blob/master/modules/data-pipeline/main.tf***
+   
     ***Code snippet:***
    ```
    resource "google_storage_bucket" "tbd-data-bucket" {
@@ -55,7 +56,7 @@ IMPORTANT ❗ ❗ ❗ Please remember to destroy all the resources after each wo
 
     Create PR from this branch to **YOUR** master and merge it to make new release. 
     
-    ***place the screenshot from GA after succesfull application of release with this changes***
+    ![img.png](doc/figures/task_5_release.png)
     
 
 7. Analyze terraform code. Play with terraform plan, terraform graph to investigate different modules.
