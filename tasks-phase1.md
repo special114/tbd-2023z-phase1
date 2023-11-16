@@ -62,12 +62,102 @@ IMPORTANT ❗ ❗ ❗ Please remember to destroy all the resources after each wo
 7. Analyze terraform code. Play with terraform plan, terraform graph to investigate different modules.
 
     ***describe one selected module and put the output of terraform graph for this module here***
+   ***Opisywany moduł: data-pipeline***
+
+   Ten kod Terraform definiuje zasoby na GCP w celu utworzenia Cloud Storage Buckets oraz nadania odpowiednich uprawnień za pomocą ról IAM. Poniżej przedstawiamy opisy poszczególnych zasobów:
+   ```
+   locals {
+    dag_bucket_name_levels = split("/", var.dag_bucket_name)
+    dag_bucket_name_length = length(local.dag_bucket_name_levels)
+    dag_folder             = element(local.dag_bucket_name_levels, local.dag_bucket_name_length - 1)
+    dag_bucket_name        = element(local.dag_bucket_name_levels, 2)
+   }
+   ```
+   Definicja lokalnych zmiennych, które będą używane przy tworzeniu bucketu przechowującego kod związany ze zadaniami z zależnościami skierowanymi (DAG) (plik modules/data-pipeline/resources/data-dag.py).
+
+   ```
+   resource "google_storage_bucket" "tbd-code-bucket" {
+      project                     = var.project_name
+      name                        = var.bucket_name
+      location                    = var.region
+      uniform_bucket_level_access = false #tfsec:ignore:google-storage-enable-ubla
+      force_destroy               = true
+      versioning {
+        enabled = true
+      }
+    
+      #checkov:skip=CKV_GCP_62: "Bucket should log access"
+      #checkov:skip=CKV_GCP_29: "Ensure that Cloud Storage buckets have uniform bucket-level access enabled"
+      #checkov:skip=CKV_GCP_78: "Ensure Cloud storage has versioning enabled"
+      public_access_prevention = "enforced"
+   }
+   ```
+   Utworzenie bucketa przechowującego dodatkowy kod skryptów wykonywanych jobów (modules/data-pipeline/resources/spark-job.py). Nazwa projektu, nazwa bucketa i jego lokalizacja ustalane są na
+   poziomie globalnym. Pozostałe właściwości blokują publiczny dostęp do bucketa, umożliwają wersjonowanie oraz pozwalają niszczenie kubełka nawet jeżeli nie jest pusty (nie przechowujemy
+   tu wrażliwych danych). `uniform_bucket_level_access = false` oznacza, że możemy oddzielnie zarządzać uprawnieniami dostępu dla poszczególnych obiektów.
+
+   ```
+   resource "google_storage_bucket_iam_member" "tbd-code-bucket-iam-viewer" {
+      bucket = google_storage_bucket.tbd-code-bucket.name
+      role   = "roles/storage.objectViewer"
+      member = "serviceAccount:${var.data_service_account}"
+   }
+   ```
+   Nadanie możliwości przeglądania bucketa dla utworzonego konta serwisowego.
+
+   ```
+   resource "google_storage_bucket_object" "job-code" {
+      for_each = toset(["spark-job.py"])
+      bucket   = google_storage_bucket.tbd-code-bucket.name
+      name     = each.value
+      source   = "${path.module}/resources/${each.value}"
+   }
+   ```
+   Utworzenie obiektu z plikiem `modules/data-pipeline/resources/spark-job.py` we wcześniej zdefiniowanym buckecie.
+
+   ```
+   resource "google_storage_bucket_object" "dag-code" {
+      for_each = toset(["data-dag.py"])
+      bucket   = local.dag_bucket_name
+      name     = "${local.dag_folder}/${each.value}"
+      source   = "${path.module}/resources/${each.value}"
+   }
+   ```
+   Utworzenie obiektu z plikiem `modules/data-pipeline/resources/data-dag.py` w buckecie stworzonym przez moduł Composer.
+
+   ```
+    resource "google_storage_bucket" "tbd-data-bucket" {
+      project                     = var.project_name
+      name                        = var.data_bucket_name
+      location                    = var.region
+      uniform_bucket_level_access = false #tfsec:ignore:google-storage-enable-ubla
+      force_destroy               = true
+      public_access_prevention    = "enforced"
+  
+      #checkov:skip=CKV_GCP_78: "Ensure Cloud storage has versioning enabled"
+    }
+   ```
+   Utworzenie bucketu na przechowywanie i przetwarzanie danych przez Apache Airflow.
+
+   ```
+   resource "google_storage_bucket_iam_member" "tbd-data-bucket-iam-editor" {
+        bucket = google_storage_bucket.tbd-data-bucket.name
+        role   = "roles/storage.objectUser"
+        member = "serviceAccount:${var.data_service_account}"
+   }
+   ```
+   Nadanie możliwości czytania i zapisywania do powyższego bucketa dla utworzonego konta serwisowego.
    
-8. Reach YARN UI
+   
+   Przy pomocy komendy uruchomionej w katalogu `tbd-2023z-phase1/modules/data-pipeline`
+   `terraform graph | dot -Tsvg > graph.svg`
+   wygenerowaliśmy graf zależności.
+   
+9. Reach YARN UI
    
    ***place the port and the screenshot of YARN UI here***
    
-9. Draw an architecture diagram (e.g. in draw.io) that includes:
+10. Draw an architecture diagram (e.g. in draw.io) that includes:
     1. VPC topology with service assignment to subnets
     2. Description of the components of service accounts
     3. List of buckets for disposal
@@ -75,7 +165,7 @@ IMPORTANT ❗ ❗ ❗ Please remember to destroy all the resources after each wo
   
     ***place your diagram here***
 
-10. Add costs by entering the expected consumption into Infracost
+11. Add costs by entering the expected consumption into Infracost
 
    ***place the expected consumption you entered here***
 
