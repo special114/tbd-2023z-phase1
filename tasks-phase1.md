@@ -381,23 +381,32 @@ W plikach ORC jest zawarta informacja o kolumnach znajdujących się w tym pliku
 ![Zrzut ekranu z 2023-11-24 20-34-50](https://github.com/special114/tbd-2023z-phase1/assets/51239039/bc13279f-9a3b-4897-aa7f-f9057b9dcf8c)
 
 Błąd wynika z braku możliwości zapisu do wskazanego bucketa. Należy zmienić zmienną DATA_BUCKET aby wskazywała na bucket utworzony przez nas.
+Po zmianie adresu bucketa na poprawny, błąd już nie występuje.
 
-    ***describe the cause and how to find the error***
+[Link do zmiany w kodzie](https://github.com/bdg-tbd/tbd-2023z-phase1/commit/07baf3410593ea653efb8f2c95d193eb1643261f)
+
+![Zrzut ekranu z 2023-11-30 20-57-34](https://github.com/special114/tbd-2023z-phase1/assets/51239039/8833bb75-e5b3-4da8-b561-f7423c4c5c3e)
+
 
 15. Additional tasks using Terraform:
 
     1. Add support for arbitrary machine types and worker nodes for a Dataproc cluster and JupyterLab instance
 
-    ***place the link to the modified file and inserted terraform code***
+    [Link do zmiany w kodzie](https://github.com/bdg-tbd/tbd-2023z-phase1/commit/9052cf4a56b10355dac468e11985627568659ea0)
     
-    3. Add support for preemptible/spot instances in a Dataproc cluster
+    2. Add support for preemptible/spot instances in a Dataproc cluster
 
-    ***place the link to the modified file and inserted terraform code***
+    [Link do zmiany w kodzie](https://github.com/bdg-tbd/tbd-2023z-phase1/commit/01b925e3667eca2ff22c1e0de5a33bf08e35d867)
     
     3. Perform additional hardening of Jupyterlab environment, i.e. disable sudo access and enable secure boot
     
-    ***place the link to the modified file and inserted terraform code***
+    [Link do zmiany w kodzie](https://github.com/bdg-tbd/tbd-2023z-phase1/commit/3585b0787ef4285ba1751535a2ee2dcb6bf9dfa3)
 
     4. (Optional) Get access to Apache Spark WebUI
 
-    ***place the link to the modified file and inserted terraform code***
+    Połączyliśmy się z klastrem Dataproc. Uruchomiliśmy komendę `spark-shell` i w przeglądarce poprzez Hadoop UI dostaliśmy się do Apache Spark WebUI.
+    
+    ![Zrzut ekranu z 2023-11-30 22-39-52](https://github.com/special114/tbd-2023z-phase1/assets/51239039/c2d40854-04a6-4c0d-95c3-1acf33c7e99a)
+
+    ![Zrzut ekranu z 2023-11-30 22-32-24](https://github.com/special114/tbd-2023z-phase1/assets/51239039/35fe5162-7d9f-4615-83d5-f1ec41a5e612)
+
