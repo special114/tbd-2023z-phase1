@@ -18,7 +18,7 @@ import tempfile
 from pyspark.sql import SparkSession
 
 # change to your data bucket
-DATA_BUCKET = "gs://tbd-2023z-9910-data/data/shakespeare/"
+DATA_BUCKET = "gs://tbd-2023z-300271-2-data/data/shakespeare/"
 
 spark = SparkSession.builder.appName('Shakespeare WordCount').getOrCreate()
 
