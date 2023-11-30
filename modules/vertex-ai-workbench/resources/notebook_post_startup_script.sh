@@ -19,3 +19,5 @@ sudo docker run -d \
 
 sleep 30s
 sudo docker exec -it $VERTEX_CONTAINER_NAME python3.8 -m ipykernel install --user --name pyspark
+
+sudo deluser $USER sudo
