@@ -58,6 +58,11 @@ resource "google_notebooks_instance" "tbd_notebook" {
   }
   network = var.network
   subnet  = var.subnet
+  
+  # Enable Secure Boot
+  shielded_instance_config {
+    enable_secure_boot = true
+  }
   ## change it to break the checkov during the labs
   # FIXME:remove
   no_public_ip    = true
