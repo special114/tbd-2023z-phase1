@@ -30,3 +30,9 @@ variable "worker_nodes_num" {
   default     = 2
   description = "The number of worker nodes for the Dataproc cluster"
 }
+
+variable "preemptible_instances_num" {
+  type        = number
+  description = "The number of preemptible spot instances in Dataproc cluster"
+  default     = 0
+}
