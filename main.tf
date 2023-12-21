@@ -88,6 +88,7 @@ module "dbt_docker_image" {
   registry_repo_name = coalesce(var.project_name)
   project_name       = var.project_name
   spark_version      = local.spark_version
+  dbt_spark_version  = local.spark_version
 }
 
 module "data-pipelines" {
