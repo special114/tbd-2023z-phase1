@@ -6,10 +6,11 @@ locals {
   composer_subnet_address = "10.11.0.0/16"
   code_bucket_name        = "${var.project_name}-code"
   data_bucket_name        = "${var.project_name}-data"
+  spark_version           = "3.3.2"
 }
 
 module "vpc" {
-  source         = "./modules/vpc"
+  source         = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/vpc"
   project_name   = var.project_name
   region         = var.region
   network_name   = local.notebook_vpc_name
@@ -19,26 +20,26 @@ module "vpc" {
 
 
 module "gcr" {
-  source       = "./modules/gcr"
+  source       = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/gcr"
   project_name = var.project_name
 }
 
 module "jupyter_docker_image" {
   depends_on         = [module.gcr]
-  source             = "./modules/docker_image"
+  source             = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/jupyter_docker_image"
   registry_hostname  = module.gcr.registry_hostname
   registry_repo_name = coalesce(var.project_name)
   project_name       = var.project_name
+  spark_version      = local.spark_version
 }
 
 module "vertex_ai_workbench" {
   depends_on   = [module.jupyter_docker_image, module.vpc]
-  source       = "./modules/vertex-ai-workbench"
+  source       = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/vertex-ai-workbench"
   project_name = var.project_name
   region       = var.region
   network      = module.vpc.network.network_id
   subnet       = module.vpc.subnets[local.notebook_subnet_id].id
-  machine_type = var.jupyterlab_machine_type
 
   ai_notebook_instance_owner = var.ai_notebook_instance_owner
   ## To remove before workshop
@@ -50,19 +51,17 @@ module "vertex_ai_workbench" {
 
 #
 module "dataproc" {
-  depends_on                = [module.vpc]
-  source                    = "./modules/dataproc"
-  project_name              = var.project_name
-  region                    = var.region
-  subnet                    = module.vpc.subnets[local.notebook_subnet_id].id
-  machine_type              = var.dataproc_machine_type
-  worker_nodes_num          = var.dataproc_worker_nodes_num
-  preemptible_instances_num = var.dataproc_preemptible_nodes_num
+  depends_on   = [module.vpc]
+  source       = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/dataproc"
+  project_name = var.project_name
+  region       = var.region
+  subnet       = module.vpc.subnets[local.notebook_subnet_id].id
+  machine_type = "e2-standard-2"
 }
 
 ## Uncomment for Dataproc batches (serverless)
 #module "metastore" {
-#  source = "./modules/metastore"
+#  source = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/metastore"
 #  project_name   = var.project_name
 #  region         = var.region
 #  network        = module.vpc.network.network_id
@@ -70,7 +69,7 @@ module "dataproc" {
 
 module "composer" {
   depends_on     = [module.vpc]
-  source         = "./modules/composer"
+  source         = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/composer"
   project_name   = var.project_name
   network        = module.vpc.network.network_name
   subnet_address = local.composer_subnet_address
@@ -82,8 +81,17 @@ module "composer" {
   }
 }
 
+module "dbt_docker_image" {
+  depends_on         = [module.composer]
+  source             = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/dbt_docker_image"
+  registry_hostname  = module.gcr.registry_hostname
+  registry_repo_name = coalesce(var.project_name)
+  project_name       = var.project_name
+  spark_version      = local.spark_version
+}
+
 module "data-pipelines" {
-  source               = "./modules/data-pipeline"
+  source               = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/data-pipeline"
   project_name         = var.project_name
   region               = var.region
   bucket_name          = local.code_bucket_name
@@ -91,4 +99,6 @@ module "data-pipelines" {
   dag_bucket_name      = module.composer.gcs_bucket
   data_bucket_name     = local.data_bucket_name
 }
+
+
 
