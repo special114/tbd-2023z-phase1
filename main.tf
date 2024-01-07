@@ -12,10 +12,12 @@ locals {
   spark_blockmgr_port     = 30001
   dbt_version             = "1.7.3"
   dbt_spark_version       = "1.7.1"
+  dbt_git_repo            = "https://github.com/mwiewior/tbd-tpc-di.git"
+  dbt_git_repo_branch     = "main"
 }
 
 module "vpc" {
-  source         = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/vpc"
+  source         = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.36/modules/vpc"
   project_name   = var.project_name
   region         = var.region
   network_name   = local.notebook_vpc_name
@@ -25,13 +27,13 @@ module "vpc" {
 
 
 module "gcr" {
-  source       = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/gcr"
+  source       = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.36/modules/gcr"
   project_name = var.project_name
 }
 
 module "jupyter_docker_image" {
   depends_on         = [module.gcr]
-  source             = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/jupyter_docker_image"
+  source             = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.36/modules/jupyter_docker_image"
   registry_hostname  = module.gcr.registry_hostname
   registry_repo_name = coalesce(var.project_name)
   project_name       = var.project_name
@@ -42,7 +44,7 @@ module "jupyter_docker_image" {
 
 module "vertex_ai_workbench" {
   depends_on   = [module.jupyter_docker_image, module.vpc]
-  source       = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/vertex-ai-workbench"
+  source       = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.36/modules/vertex-ai-workbench"
   project_name = var.project_name
   region       = var.region
   network      = module.vpc.network.network_id
@@ -59,7 +61,7 @@ module "vertex_ai_workbench" {
 #
 module "dataproc" {
   depends_on   = [module.vpc]
-  source       = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/dataproc"
+  source       = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.36/modules/dataproc"
   project_name = var.project_name
   region       = var.region
   subnet       = module.vpc.subnets[local.notebook_subnet_id].id
@@ -68,7 +70,7 @@ module "dataproc" {
 
 ## Uncomment for Dataproc batches (serverless)
 #module "metastore" {
-#  source = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/metastore"
+#  source = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.36/modules/metastore"
 #  project_name   = var.project_name
 #  region         = var.region
 #  network        = module.vpc.network.network_id
@@ -76,7 +78,7 @@ module "dataproc" {
 
 module "composer" {
   depends_on     = [module.vpc]
-  source         = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/composer"
+  source         = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.36/modules/composer"
   project_name   = var.project_name
   network        = module.vpc.network.network_name
   subnet_address = local.composer_subnet_address
@@ -86,12 +88,14 @@ module "composer" {
     "AIRFLOW_VAR_BUCKET_NAME" : local.code_bucket_name
     "AIRFLOW_VAR_PHS_CLUSTER" : module.dataproc.dataproc_cluster_name,
     "AIRFLOW_VAR_WRK_NAMESPACE" : local.composer_work_namespace,
+    "AIRFLOW_VAR_DBT_GIT_REPO" : local.dbt_git_repo,
+    "AIRFLOW_VAR_DBT_GIT_REPO_BRANCH" : local.dbt_git_repo_branch
   }
 }
 
 module "dbt_docker_image" {
   depends_on         = [module.composer]
-  source             = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/dbt_docker_image"
+  source             = "./modules/dbt_docker_image"
   registry_hostname  = module.gcr.registry_hostname
   registry_repo_name = coalesce(var.project_name)
   project_name       = var.project_name
@@ -101,7 +105,7 @@ module "dbt_docker_image" {
 }
 
 module "data-pipelines" {
-  source               = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.34/modules/data-pipeline"
+  source               = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.36/modules/data-pipeline"
   project_name         = var.project_name
   region               = var.region
   bucket_name          = local.code_bucket_name
@@ -154,6 +158,4 @@ resource "google_compute_firewall" "allow-all-internal" {
     protocol = "all"
   }
   source_ranges = ["10.0.0.0/8"]
-
-  #checkov:skip=CKV2_GCP_12: "Ensure GCP compute firewall ingress does not allow unrestricted access to all ports"
 }
