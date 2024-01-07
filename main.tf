@@ -95,7 +95,7 @@ module "composer" {
 
 module "dbt_docker_image" {
   depends_on         = [module.composer]
-  source             = "./modules/dbt_docker_image"
+  source             = "github.com/bdg-tbd/tbd-workshop-1.git?ref=v1.0.36/modules/dbt_docker_image"
   registry_hostname  = module.gcr.registry_hostname
   registry_repo_name = coalesce(var.project_name)
   project_name       = var.project_name
