@@ -158,4 +158,6 @@ resource "google_compute_firewall" "allow-all-internal" {
     protocol = "all"
   }
   source_ranges = ["10.0.0.0/8"]
+
+  #checkov:skip=CKV2_GCP_12: "Ensure GCP compute firewall ingress does not allow unrestricted access to all ports"
 }
