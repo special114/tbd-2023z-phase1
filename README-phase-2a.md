@@ -58,7 +58,7 @@ the running instance of your Vertex AI Workbench
 
    c)update git clone command to point to ***your fork***.
 
- 
+ https://github.com/special114/tbd-tpc-di
 
 
 6. Access Vertex AI Workbench and run cell by cell notebook `tpc-di-setup.ipynb`.
@@ -89,19 +89,69 @@ the running instance of your Vertex AI Workbench
 
 7. Explore files created by generator and describe them, including format, content, total size.
 
-   ***Files desccription***
+   Wygenerowane zostały pliki podzielone na trzy Batche. Pliki są różnych rodzajów, ale wszystkie zawierają dane do umieszczenia w tabelach bazy danych. Typy plików to:
+   * pliki w formacie .txt zawierają dane tabelaryczne rozdzielone znakiem `|`.
+   * pliki FINWIRE... są plikami o stałej szerokości wiersza
+   * plik XML CustomerMgmt.xml
 
-8. Analyze tpcdi.py. What happened in the loading stage?
+   Dodatkowo do każdego pliku z danymi został wygenerowany plik z logami, zawierający informacje o wygenerowanych danych. Wygenerowane pliki mają rozmiar ok 960MB i w większości
+   miejsce to zajmują pliki z Batcha nr 1.
 
-   ***Your answer***
+   ![Zrzut ekranu z 2024-01-07 13-49-48](https://github.com/special114/tbd-2023z-phase1/assets/51239039/64caba17-d1d9-4676-8089-f23bfd6f8cdc)
 
-9. Using SparkSQL answer: how many table were created in each layer?
+9. Analyze tpcdi.py. What happened in the loading stage?
 
-   ***SparkSQL command and output***
+   W loading stage tworzone są cztery bazy danych "digen", "bronze", "silver", "gold". Następnie w bazie "digen" tworzone są tabele oraz wczytywane są dane z wygenerowanych w poprzednim poleceniu plikow. Przetwarzane są tylko pliki z Batcha nr 1. Przed utworzeniem tabeli dane z każdego pliku są umieszczane w buckecie `tbd-2023z-300271-2-data`.
 
-10. Add some 3 more [dbt tests](https://docs.getdbt.com/docs/build/tests) and explain what you are testing. ***Add new tests to your repository.***
+   Na początku przetwarzane są pliki .txt. Do każdego pliku zapisany jest jego schemat i na tej podstawie tworzona jest tabela.
+   
+   Następnie czytany jest plik xml z tabelą "customer_mgmt".
+   
+   Na końcu przetwarzane są pliki "FINWIRE...". Te pliki mają stałą szerokość linii, więc każda linia jest wczytywana w całości. Następnie dane zapisywane są w tabeli tymczasowej zawierającej kolumny "rec_type" z typem rekordu, "pts" ze znacznikiem czasowym oraz "line" z całą zawartością wiersza. Później wszystkie wiersze z tabeli tymczasowej na podstawie typu rekordu są parsowane na trzy różne sposoby i zapisywane w tabelach "CMP", "SEC" oraz "FIN".
 
-   ***Code and description of your tests***
+11. Using SparkSQL answer: how many table were created in each layer?
+
+   ```
+db_table_counts = {}
+for db in spark.sql("show databases").collect():
+    db_name = db.namespace
+    spark.sql(f"use {db_name}")
+    db_table_counts[db_name] = spark.sql("show tables").count()
+
+for db_name, table_count in db_table_counts.items():
+    print(f"Layer: {db_name} - Tables: {table_count}")
+   ```
+   ![Zrzut ekranu z 2024-01-07 14-55-05](https://github.com/special114/tbd-2023z-phase1/assets/51239039/82fee24c-66ff-422d-83e8-e15490ec1762)
+
+
+11. Add some 3 more [dbt tests](https://docs.getdbt.com/docs/build/tests) and explain what you are testing. ***Add new tests to your repository.***
+
+   ```
+-- Sprawdzenie, że nie istnieją konta bez przypisanego `account_id`
+
+select 
+    *
+from {{ ref('accounts') }} 
+where account_id is NULL
+
+
+-- Sprawdzenie, że nie istnieje dwóch pracowników tym samym `employee_id`
+
+select 
+    employee_id,
+    count(employee_id) cnt
+from {{ ref('employees') }} 
+group by employee_id
+having cnt > 1
+
+
+-- Sprawdzenie, że nie istnieją transakcje z czasem utworzenia `create_timestamp` z przyszłości
+
+select 
+    *
+from {{ ref('trades') }} 
+where create_timestamp > now()
+   ```
 
 11. In main.tf update
    ```
