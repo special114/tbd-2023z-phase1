@@ -17,12 +17,12 @@ Worth to read:
 * https://www.databricks.com/blog/2023/04/14/how-we-performed-etl-one-billion-records-under-1-delta-live-tables.html
 
 2. Authors:
+   
+   ***Grupa nr. 6***
 
-   ***Enter your group nr***
+   ***repo: https://github.com/special114/tbd-2023z-phase1***
 
-   ***Link to forked repo***
-
-3. Replace your `main.tf` (in the root module) from the phase 1 with [main.tf](https://github.com/bdg-tbd/tbd-workshop-1/blob/v1.0.36/main.tf)
+4. Replace your `main.tf` (in the root module) from the phase 1 with [main.tf](https://github.com/bdg-tbd/tbd-workshop-1/blob/v1.0.36/main.tf)
 and change each module `source` reference from the repo relative path to a github repo tag `v1.0.36` , e.g.:
 ```hcl
 module "dbt_docker_image" {
@@ -57,11 +57,11 @@ the running instance of your Vertex AI Workbench
    This lines are required to run dbt on airflow but have to be commented while running dbt in notebook.
 
    c)update git clone command to point to ***your fork***.
+   
+   ***https://github.com/special114/tbd-tpc-di***
 
- https://github.com/special114/tbd-tpc-di
 
-
-6. Access Vertex AI Workbench and run cell by cell notebook `tpc-di-setup.ipynb`.
+7. Access Vertex AI Workbench and run cell by cell notebook `tpc-di-setup.ipynb`.
 
     a) in the first cell of the notebook replace: `%env DATA_BUCKET=tbd-2023z-9910-data` with your data bucket.
 
